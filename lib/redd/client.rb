@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'http'
+require 'excon'
 require 'json'
 
 module Redd
@@ -34,8 +34,35 @@ module Redd
     # @return [Response] the response
     def request(verb, path, options = {})
       # puts "#{verb.to_s.upcase} #{path}", '  ' + options.inspect
-      response = connection.request(verb, path, **options)
-      Response.new(response.status.code, response.headers, response.body.to_s)
+
+      full_path = if (params = options[:params])
+        uri = URI.parse(path)
+        qs  = URI.encode_www_form(params)
+        uri.query = if uri.query
+          [uri.query, qs].join('&')
+        else
+          qs
+        end
+        uri.to_s
+      else
+        path
+      end
+
+      args = {
+        method: verb,
+        path:   path,
+        read_timeout:  5,
+        write_timeout: 5
+      }
+      
+      if (body = options[:body])
+        args[:body] = body
+      elsif (form = options[:form])
+        args[:body] = URI.encode_www_form(**form)
+      end
+
+      response = connection.request(**args)
+      Response.new(response.status, response.headers, response.body)
     end
 
     # Make a GET request.
@@ -83,9 +110,13 @@ module Redd
     # @return [HTTP::Connection] the base connection object
     def connection
       # TODO: Make timeouts configurable
-      @connection ||= HTTP.persistent(@endpoint)
-                          .headers('User-Agent' => @user_agent)
-                          .timeout(:per_operation, write: 5, connect: 5, read: 5)
+      @connection ||= Excon.new(@endpoint,
+        persistent:      true,
+        connect_timeout: 5,
+        headers: {
+          'User-Agent' => @user_agent
+        }
+      )
     end
   end
 end
