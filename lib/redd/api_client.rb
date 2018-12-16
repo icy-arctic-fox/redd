@@ -107,7 +107,7 @@ module Redd
     end
 
     def connection
-      super.auth("Bearer #{@access.access_token}")
+      super(headers: { 'Authorization': "Bearer #{@access.access_token}" })
     end
   end
 end

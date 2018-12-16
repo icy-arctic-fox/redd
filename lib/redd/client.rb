@@ -110,12 +110,17 @@ module Redd
     # @return [HTTP::Connection] the base connection object
     def connection(options = {})
       # TODO: Make timeouts configurable
+      headers = {
+        'User-Agent' => @user_agent
+      }
+      if options.key?(:headers)
+        headers.merge!(options[:headers])
+        options.delete(:headers)
+      end
       args = {
         persistent:      true,
         connect_timeout: 5,
-        headers: {
-          'User-Agent' => @user_agent
-        }
+        headers:         headers
       }.merge(**options)
       @connection ||= Excon.new(@endpoint, **args)
     end
