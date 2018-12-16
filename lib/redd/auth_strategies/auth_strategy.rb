@@ -54,7 +54,7 @@ module Redd
       private
 
       def connection
-        @connection ||= super.basic_auth(user: @client_id, pass: @secret)
+        @connection ||= super(user: @client_id, password: @secret)
       end
 
       def request_access(grant_type, options = {})
