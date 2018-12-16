@@ -50,7 +50,7 @@ module Redd
 
       args = {
         method: verb,
-        path:   path,
+        path:   full_path,
         read_timeout:  5,
         write_timeout: 5
       }
@@ -58,10 +58,10 @@ module Redd
       if (body = options[:body])
         args[:body] = body
       elsif (form = options[:form])
-        args[:body] = URI.encode_www_form(**form)
+        args[:body] = URI.encode_www_form(form)
       end
 
-      response = connection.request(**args)
+      response = connection.request(args)
       Response.new(response.status, response.headers, response.body)
     end
 
