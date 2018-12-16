@@ -91,7 +91,7 @@ module Redd
 
     def handle_retryable_errors
       response = yield
-    rescue Errors::ServerError, HTTP::TimeoutError => e
+    rescue Errors::ServerError, Excon::Error::Timeout => e
       # FIXME: maybe only retry GET requests, for obvious reasons?
       @failures += 1
       raise e if @failures > @max_retries

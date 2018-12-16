@@ -241,7 +241,7 @@ module Redd
       # @return [String, nil] the stylesheet or nil if no stylesheet exists
       def stylesheet
         url = client.get("/r/#{read_attribute(:display_name)}/stylesheet").headers['location']
-        HTTP.get(url).body.to_s
+        Excon.get(url).body
       rescue Errors::NotFound
         nil
       end
